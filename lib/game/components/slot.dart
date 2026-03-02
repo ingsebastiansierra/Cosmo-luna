@@ -8,6 +8,7 @@ import '../nebula_game.dart';
 class Slot extends PositionComponent with TapCallbacks {
   final int slotId;
   final Color expectedColor;
+  final double slotSize;
   bool isFilled = false;
   bool isCorrect = false;
   bool isActive = false;
@@ -19,7 +20,8 @@ class Slot extends PositionComponent with TapCallbacks {
     required this.slotId,
     required this.expectedColor,
     required Vector2 position,
-  }) : super(position: position, size: Vector2.all(90));
+    required this.slotSize,
+  }) : super(position: position, size: Vector2.all(slotSize));
 
   @override
   void onTapDown(TapDownEvent event) {
@@ -179,8 +181,8 @@ class Slot extends PositionComponent with TapCallbacks {
   }
 
   bool isNearby(Vector2 position) {
-    final slotCenter = this.position + Vector2(45, 45);
+    final slotCenter = this.position + Vector2(slotSize / 2, slotSize / 2);
     final distance = (slotCenter - position).length;
-    return distance < 100;
+    return distance < (slotSize * 1.1);
   }
 }

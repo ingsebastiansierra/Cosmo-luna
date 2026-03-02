@@ -59,14 +59,12 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
     super.update(dt);
     animationTimer += dt;
 
-    // Animación de entrada del modal (elastic)
+    // Animación de entrada del modal más rápida y simple
     if (modalScale < 1.0) {
-      modalScale = min(1.0, modalScale + dt * 3.5);
-      final elastic = modalScale * modalScale * (3.0 - 2.0 * modalScale);
-      modalScale = elastic;
+      modalScale = min(1.0, modalScale + dt * 5.0); // Más rápido
     }
 
-    // Actualizar confeti
+    // Actualizar confeti (menos frecuente para mejor rendimiento)
     for (var confetti in confettiList) {
       confetti.position += confetti.velocity * dt;
       confetti.velocity.y += 180 * dt; // Gravedad
@@ -106,9 +104,9 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       canvas.restore();
     }
 
-    // Calcular tamaño del modal responsive
-    final modalWidth = (size.x * 0.85).clamp(280.0, 450.0);
-    final modalHeight = (size.y * 0.55).clamp(350.0, 500.0);
+    // Calcular tamaño del modal MÁS GRANDE
+    final modalWidth = (size.x * 0.90).clamp(300.0, 500.0);
+    final modalHeight = (size.y * 0.65).clamp(400.0, 600.0);
     final modalX = (size.x - modalWidth) / 2;
     final modalY = (size.y - modalHeight) / 2;
 
@@ -171,11 +169,11 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       borderPaint,
     );
 
-    // Icono de éxito
+    // Icono de éxito MÁS GRANDE
     final iconPainter = TextPainter(
       text: const TextSpan(
         text: '🎉',
-        style: TextStyle(fontSize: 60),
+        style: TextStyle(fontSize: 80),
       ),
       textDirection: TextDirection.ltr,
     );
@@ -184,12 +182,12 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       canvas,
       Offset(
         modalX + modalWidth / 2 - iconPainter.width / 2,
-        modalY + modalHeight * 0.12,
+        modalY + modalHeight * 0.10,
       ),
     );
 
-    // Título responsive
-    final titleSize = (modalWidth * 0.08).clamp(20.0, 32.0);
+    // Título MÁS GRANDE
+    final titleSize = (modalWidth * 0.10).clamp(24.0, 38.0);
     final titlePainter = TextPainter(
       text: TextSpan(
         text: '¡NIVEL COMPLETADO!',
@@ -209,12 +207,12 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       canvas,
       Offset(
         modalX + modalWidth / 2 - titlePainter.width / 2,
-        modalY + modalHeight * 0.30,
+        modalY + modalHeight * 0.28,
       ),
     );
 
-    // Mensaje responsive
-    final messageSize = (modalWidth * 0.045).clamp(14.0, 18.0);
+    // Mensaje MÁS GRANDE
+    final messageSize = (modalWidth * 0.050).clamp(16.0, 22.0);
     final messagePainter = TextPainter(
       text: TextSpan(
         text: '¡Excelente trabajo!\n💙 Luna está más cerca',
@@ -233,12 +231,12 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       canvas,
       Offset(
         modalX + modalWidth / 2 - messagePainter.width / 2,
-        modalY + modalHeight * 0.45,
+        modalY + modalHeight * 0.42,
       ),
     );
 
-    // Puntos ganados en este nivel
-    final pointsSize = (modalWidth * 0.05).clamp(15.0, 20.0);
+    // Puntos ganados MÁS GRANDE
+    final pointsSize = (modalWidth * 0.060).clamp(18.0, 26.0);
     final pointsPainter = TextPainter(
       text: TextSpan(
         text: '⭐ +$pointsEarned puntos',
@@ -258,7 +256,7 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       canvas,
       Offset(
         modalX + modalWidth / 2 - pointsPainter.width / 2,
-        modalY + modalHeight * 0.58,
+        modalY + modalHeight * 0.56,
       ),
     );
 
@@ -319,12 +317,12 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       barProgressPaint,
     );
 
-    // Botón responsive con animación de pulso
+    // Botón MÁS GRANDE con animación de pulso
     final buttonPulse = 1.0 + sin(animationTimer * 4) * 0.04;
-    final buttonWidth = (modalWidth * 0.75 * buttonPulse).clamp(200.0, 320.0);
-    final buttonHeight = (modalHeight * 0.12 * buttonPulse).clamp(50.0, 65.0);
+    final buttonWidth = (modalWidth * 0.80 * buttonPulse).clamp(240.0, 380.0);
+    final buttonHeight = (modalHeight * 0.14 * buttonPulse).clamp(55.0, 75.0);
     final buttonX = modalX + (modalWidth - buttonWidth) / 2;
-    final buttonY = modalY + modalHeight * 0.78;
+    final buttonY = modalY + modalHeight * 0.76;
 
     // Sombra del botón
     final buttonShadowPaint = Paint()
@@ -358,8 +356,8 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
       buttonPaint,
     );
 
-    // Texto del botón responsive
-    final buttonTextSize = (buttonHeight * 0.35).clamp(16.0, 20.0);
+    // Texto del botón MÁS GRANDE
+    final buttonTextSize = (buttonHeight * 0.38).clamp(18.0, 24.0);
     final buttonTextPainter = TextPainter(
       text: TextSpan(
         text: 'SIGUIENTE NIVEL →',
@@ -389,18 +387,18 @@ class VictoryOverlay extends PositionComponent with TapCallbacks {
 
   @override
   void onTapDown(TapDownEvent event) {
-    if (modalScale < 0.95) return; // Esperar a que termine la animación
+    if (modalScale < 0.9) return; // Esperar a que termine la animación
 
     // Calcular posición del botón
-    final modalWidth = (size.x * 0.85).clamp(280.0, 450.0);
-    final modalHeight = (size.y * 0.55).clamp(350.0, 500.0);
+    final modalWidth = (size.x * 0.90).clamp(300.0, 500.0);
+    final modalHeight = (size.y * 0.65).clamp(400.0, 600.0);
     final modalX = (size.x - modalWidth) / 2;
     final modalY = (size.y - modalHeight) / 2;
 
-    final buttonWidth = (modalWidth * 0.75).clamp(200.0, 320.0);
-    final buttonHeight = (modalHeight * 0.12).clamp(50.0, 65.0);
+    final buttonWidth = (modalWidth * 0.80).clamp(240.0, 380.0);
+    final buttonHeight = (modalHeight * 0.14).clamp(55.0, 75.0);
     final buttonX = modalX + (modalWidth - buttonWidth) / 2;
-    final buttonY = modalY + modalHeight * 0.78;
+    final buttonY = modalY + modalHeight * 0.76;
 
     final tapPos = event.localPosition;
 

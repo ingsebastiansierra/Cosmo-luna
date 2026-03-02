@@ -72,85 +72,66 @@ class NebulaGame extends FlameGame {
   }
 
   void _buildUI() {
-    // Header con diseño moderno y atractivo
+    // Header más bajo y con diseño moderno
+    const headerHeight = 135.0; // Más alto para incluir la barra de progreso
+    const headerTopMargin = 40.0; // Bajado más
+
+    // Fondo del header con degradado suave
     final headerBg = RectangleComponent(
-      size: Vector2(size.x, 110),
-      position: Vector2.zero(),
-      paint: Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF0A1628),
-            Color(0xFF0D2438),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, 1000, 110)),
-      priority: 5,
-    );
-    add(headerBg);
-
-    // Línea decorativa superior
-    add(RectangleComponent(
-      size: Vector2(size.x, 2),
-      position: Vector2(0, 108),
-      paint: Paint()
-        ..shader = const LinearGradient(
-          colors: [
-            Color(0x0000D9FF),
-            Color(0xFF00D9FF),
-            Color(0x0000D9FF),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, 1000, 2)),
-      priority: 6,
-    ));
-
-    // Contenedor de puntos - Diseño premium
-    final pointsBox = RectangleComponent(
-      size: Vector2(150, 65),
-      position: Vector2(15, 20),
+      size: Vector2(size.x - 30, headerHeight),
+      position: Vector2(15, headerTopMargin),
       paint: Paint()
         ..shader = const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF1E3A52),
-            Color(0xFF152D42),
+            Color(0xFF0F2838),
+            Color(0xFF1A3A52),
+            Color(0xFF0D2438),
           ],
-        ).createShader(Rect.fromLTWH(0, 0, 150, 65)),
-      priority: 6,
+        ).createShader(Rect.fromLTWH(0, 0, 1000, headerHeight)),
+      priority: 5,
     );
-    add(pointsBox);
+    add(headerBg);
 
-    // Borde brillante del contenedor de puntos
-    add(RectangleComponent(
-      size: Vector2(150, 65),
-      position: Vector2(15, 20),
-      paint: Paint()
-        ..shader = const LinearGradient(
-          colors: [
-            Color(0xFF00D9FF),
-            Color(0xFF0088CC),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, 150, 65))
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+    // Borde brillante del header con radius
+    add(_createRoundedBorder(
+      size: Vector2(size.x - 30, headerHeight),
+      position: Vector2(15, headerTopMargin),
+      colors: [Color(0xFF00D9FF), Color(0xFF0088CC)],
+      strokeWidth: 2.5,
+      radius: 20,
+      priority: 6,
+    ));
+
+    // Contenedor de puntos con border radius (más pequeño para dar espacio)
+    const boxWidth = 110.0;
+    const boxHeight = 70.0;
+    const boxY = headerTopMargin + 15;
+
+    add(_createRoundedBox(
+      size: Vector2(boxWidth, boxHeight),
+      position: Vector2(30, boxY),
+      gradientColors: [Color(0xFF1E3A52), Color(0xFF152D42)],
+      borderColors: [Color(0xFF00D9FF), Color(0xFF00B8D4)],
+      radius: 16,
       priority: 7,
     ));
 
-    // Icono de estrella con brillo
+    // Icono de estrella centrado arriba
     add(TextComponent(
       text: '⭐',
       textRenderer: TextPaint(
         style: const TextStyle(
-          fontSize: 22,
+          fontSize: 16,
           shadows: [
-            Shadow(color: Color(0xFFFFD700), blurRadius: 10),
+            Shadow(color: Color(0xFFFFD700), blurRadius: 12),
           ],
         ),
       ),
-      position: Vector2(35, 52),
+      position: Vector2(30 + boxWidth / 2 - 25, boxY + 20),
       anchor: Anchor.center,
-      priority: 8,
+      priority: 9,
     ));
 
     add(TextComponent(
@@ -158,14 +139,14 @@ class NebulaGame extends FlameGame {
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Color(0xFF6B8A9E),
-          fontSize: 11,
+          fontSize: 8,
           fontWeight: FontWeight.w700,
-          letterSpacing: 1,
+          letterSpacing: 1.0,
         ),
       ),
-      position: Vector2(100, 38),
+      position: Vector2(30 + boxWidth / 2 + 10, boxY + 20),
       anchor: Anchor.center,
-      priority: 8,
+      priority: 9,
     ));
 
     pointsText = TextComponent(
@@ -176,61 +157,43 @@ class NebulaGame extends FlameGame {
           fontSize: 24,
           fontWeight: FontWeight.bold,
           shadows: [
-            Shadow(color: Color(0xFFFFD700), blurRadius: 8),
+            Shadow(color: Color(0xFFFFD700), blurRadius: 10),
           ],
         ),
       ),
-      position: Vector2(100, 62),
+      position: Vector2(30 + boxWidth / 2, boxY + 48),
       anchor: Anchor.center,
-      priority: 8,
+      priority: 9,
     );
     add(pointsText);
 
-    // Contenedor de Luna - Diseño premium
-    final lunaBox = RectangleComponent(
-      size: Vector2(150, 65),
-      position: Vector2(size.x - 165, 20),
-      paint: Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1E3A52),
-            Color(0xFF152D42),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, 150, 65)),
-      priority: 6,
-    );
-    add(lunaBox);
+    // BARRA DE PROGRESO DE LUNA EN EL CENTRO DEL HEADER
+    _buildLunaProgressBar(headerTopMargin, boxY, boxWidth);
 
-    add(RectangleComponent(
-      size: Vector2(150, 65),
-      position: Vector2(size.x - 165, 20),
-      paint: Paint()
-        ..shader = const LinearGradient(
-          colors: [
-            Color(0xFFFF6B9D),
-            Color(0xFFCC5577),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, 150, 65))
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+    // Contenedor de Luna con border radius
+    add(_createRoundedBox(
+      size: Vector2(boxWidth, boxHeight),
+      position: Vector2(size.x - boxWidth - 30, boxY),
+      gradientColors: [Color(0xFF1E3A52), Color(0xFF152D42)],
+      borderColors: [Color(0xFFFF6B9D), Color(0xFFFF8FB3)],
+      radius: 16,
       priority: 7,
     ));
 
+    // Icono de corazón centrado arriba
     add(TextComponent(
       text: '💗',
       textRenderer: TextPaint(
         style: const TextStyle(
-          fontSize: 22,
+          fontSize: 16,
           shadows: [
-            Shadow(color: Color(0xFFFF6B9D), blurRadius: 10),
+            Shadow(color: Color(0xFFFF6B9D), blurRadius: 12),
           ],
         ),
       ),
-      position: Vector2(size.x - 148, 52),
+      position: Vector2(size.x - boxWidth - 30 + boxWidth / 2 - 20, boxY + 20),
       anchor: Anchor.center,
-      priority: 8,
+      priority: 9,
     ));
 
     add(TextComponent(
@@ -238,14 +201,14 @@ class NebulaGame extends FlameGame {
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Color(0xFF6B8A9E),
-          fontSize: 11,
+          fontSize: 8,
           fontWeight: FontWeight.w700,
-          letterSpacing: 1,
+          letterSpacing: 1.0,
         ),
       ),
-      position: Vector2(size.x - 85, 38),
+      position: Vector2(size.x - boxWidth - 30 + boxWidth / 2 + 10, boxY + 20),
       anchor: Anchor.center,
-      priority: 8,
+      priority: 9,
     ));
 
     lunaTimeText = TextComponent(
@@ -256,26 +219,25 @@ class NebulaGame extends FlameGame {
           fontSize: 24,
           fontWeight: FontWeight.bold,
           shadows: [
-            Shadow(color: Color(0xFFFF6B9D), blurRadius: 8),
+            Shadow(color: Color(0xFFFF6B9D), blurRadius: 10),
           ],
         ),
       ),
-      position: Vector2(size.x - 85, 62),
+      position: Vector2(size.x - boxWidth - 30 + boxWidth / 2, boxY + 48),
       anchor: Anchor.center,
-      priority: 8,
+      priority: 9,
     );
     add(lunaTimeText);
 
-    // Barra de progreso para liberar a Luna
-    _buildLunaProgressBar();
+    // Texto de instrucción con diseño mejorado
+    const instructionY = headerTopMargin + headerHeight + 25;
 
-    // Texto de instrucción con efecto
     instructionText = TextComponent(
       text: 'Memoriza el patrón...',
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Color(0xFF00D9FF),
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(color: Color(0xFF00D9FF), blurRadius: 15),
@@ -283,102 +245,104 @@ class NebulaGame extends FlameGame {
           ],
         ),
       ),
-      position: Vector2(size.x * 0.5, 130),
+      position: Vector2(size.x * 0.5, instructionY),
       anchor: Anchor.center,
       priority: 8,
     );
     add(instructionText);
 
-    add(TextComponent(
-      text: '━━━ NEBULA CODE ARENA ━━━',
-      textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Color(0xFF3A5A6E),
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 2,
-        ),
-      ),
-      position: Vector2(size.x * 0.5, 152),
-      anchor: Anchor.center,
+    // Línea decorativa debajo del texto
+    add(RectangleComponent(
+      size: Vector2(120, 2),
+      position: Vector2(size.x * 0.5 - 60, instructionY + 18),
+      paint: Paint()
+        ..shader = const LinearGradient(
+          colors: [
+            Color(0x0000D9FF),
+            Color(0xFF00D9FF),
+            Color(0x0000D9FF),
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, 120, 2)),
       priority: 8,
     ));
   }
 
-  void _buildLunaProgressBar() {
+  // Helper para crear cajas redondeadas con degradado
+  PositionComponent _createRoundedBox({
+    required Vector2 size,
+    required Vector2 position,
+    required List<Color> gradientColors,
+    required List<Color> borderColors,
+    required double radius,
+    required int priority,
+  }) {
+    return _RoundedBoxComponent(
+      size: size,
+      position: position,
+      gradientColors: gradientColors,
+      borderColors: borderColors,
+      radius: radius,
+      priority: priority,
+    );
+  }
+
+  // Helper para crear bordes redondeados
+  PositionComponent _createRoundedBorder({
+    required Vector2 size,
+    required Vector2 position,
+    required List<Color> colors,
+    required double strokeWidth,
+    required double radius,
+    required int priority,
+  }) {
+    return _RoundedBorderComponent(
+      size: size,
+      position: position,
+      colors: colors,
+      strokeWidth: strokeWidth,
+      radius: radius,
+      priority: priority,
+    );
+  }
+
+  void _buildLunaProgressBar(
+      double headerTopMargin, double boxY, double boxWidth) {
     // Calcular progreso
     final progress =
         (totalPointsAccumulated / pointsToFreeLuna).clamp(0.0, 1.0);
     final progressPercent = (progress * 100).toInt();
 
-    // Contenedor de la barra de progreso en la parte INFERIOR
-    final barWidth = size.x - 40;
-    const barHeight = 40.0;
-    final barX = 20.0;
-    final barY = size.y - 60.0; // Parte inferior de la pantalla
+    // Barra ABAJO de los recuadros, ocupando todo el ancho del header
+    final barWidth = size.x - 60; // Ancho completo con márgenes
+    const barHeight = 35.0;
+    const barX = 30.0;
+    final barY = boxY + 80; // Debajo de los recuadros
 
-    // Fondo de la barra con degradado
-    add(RectangleComponent(
+    // Componente de barra con border radius - PRIORIDAD ALTA
+    add(_LunaProgressBarComponent(
       size: Vector2(barWidth, barHeight),
       position: Vector2(barX, barY),
-      paint: Paint()
-        ..shader = const LinearGradient(
-          colors: [
-            Color(0xFF1A3A52),
-            Color(0xFF0D2438),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, barWidth, barHeight)),
-      priority: 6,
+      progress: progress,
+      totalPoints: totalPointsAccumulated,
+      targetPoints: pointsToFreeLuna,
+      progressPercent: progressPercent,
+      priority: 10,
     ));
-
-    // Borde brillante de la barra
-    add(RectangleComponent(
-      size: Vector2(barWidth, barHeight),
-      position: Vector2(barX, barY),
-      paint: Paint()
-        ..shader = const LinearGradient(
-          colors: [
-            Color(0xFFFF6B9D),
-            Color(0xFFFFB3C6),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, barWidth, barHeight))
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-      priority: 7,
-    ));
-
-    // Barra de progreso con degradado
-    if (progress > 0) {
-      final progressWidth = (barWidth - 8) * progress;
-      add(RectangleComponent(
-        size: Vector2(progressWidth, barHeight - 8),
-        position: Vector2(barX + 4, barY + 4),
-        paint: Paint()
-          ..shader = const LinearGradient(
-            colors: [
-              Color(0xFFFF6B9D),
-              Color(0xFFFF8FB3),
-              Color(0xFFFFB3C6),
-            ],
-          ).createShader(Rect.fromLTWH(0, 0, progressWidth, barHeight - 8)),
-        priority: 7,
-      ));
-    }
 
     // Icono de Luna
     add(TextComponent(
       text: '💙',
       textRenderer: TextPaint(
         style: const TextStyle(
-          fontSize: 20,
+          fontSize: 18,
           shadows: [
-            Shadow(color: Color(0xFFFF6B9D), blurRadius: 10),
+            Shadow(color: Color(0xFFFF6B9D), blurRadius: 12),
           ],
         ),
       ),
       position: Vector2(barX + 12, barY + barHeight / 2),
       anchor: Anchor.centerLeft,
-      priority: 8,
+      priority: 12,
     ));
 
     // Texto de progreso
@@ -388,16 +352,16 @@ class NebulaGame extends FlameGame {
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Color(0xFFFFFFFF),
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           shadows: [
-            Shadow(color: Colors.black, blurRadius: 3),
+            Shadow(color: Colors.black, blurRadius: 4),
           ],
         ),
       ),
       position: Vector2(barX + barWidth / 2, barY + barHeight / 2),
       anchor: Anchor.center,
-      priority: 8,
+      priority: 12,
     );
     add(totalPointsText);
   }
@@ -406,14 +370,20 @@ class NebulaGame extends FlameGame {
     final pieceCount = 3 + levelId;
     patternColors = List.generate(pieceCount, (i) => _getPieceColor(i));
 
+    // Calcular tamaño dinámico basado en la cantidad de piezas
+    final slotSize = _calculateSlotSize(pieceCount);
+    final pieceSize =
+        slotSize * 0.78; // Las piezas son un poco más pequeñas que los slots
+
     // Generar posiciones para slots en grid
-    final slotPositions = _generateGridPositions(pieceCount);
+    final slotPositions = _generateGridPositions(pieceCount, slotSize);
 
     for (int i = 0; i < pieceCount; i++) {
       final slot = Slot(
         slotId: i,
         expectedColor: patternColors[i],
         position: slotPositions[i],
+        slotSize: slotSize,
       );
       slots.add(slot);
       add(slot);
@@ -421,12 +391,13 @@ class NebulaGame extends FlameGame {
 
     // Crear piezas en los slots
     for (int i = 0; i < pieceCount; i++) {
-      final slotCenter = slotPositions[i] + Vector2(45, 45);
+      final slotCenter = slotPositions[i] + Vector2(slotSize / 2, slotSize / 2);
       final piece = Piece(
         color: patternColors[i],
         pieceId: i,
-        position: slotCenter - Vector2(35, 35),
+        position: slotCenter - Vector2(pieceSize / 2, pieceSize / 2),
         game: this,
+        pieceSize: pieceSize,
       );
       pieces.add(piece);
       add(piece);
@@ -435,19 +406,36 @@ class NebulaGame extends FlameGame {
     gameReady = true;
   }
 
-  List<Vector2> _generateGridPositions(int count) {
+  // Calcular tamaño de slot basado en cantidad de piezas
+  double _calculateSlotSize(int count) {
+    if (count <= 4) return 90.0;
+    if (count <= 6) return 80.0;
+    if (count <= 9) return 70.0;
+    if (count <= 12) return 60.0;
+    return 55.0; // Para más de 12 piezas
+  }
+
+  List<Vector2> _generateGridPositions(int count, double slotSize) {
     final positions = <Vector2>[];
 
-    // Grid de 3 columnas centrado
-    const cols = 3;
-    const slotSize = 90.0;
-    const spacing = 30.0;
-    const cellSize = slotSize + spacing;
+    // Determinar número de columnas según cantidad de piezas
+    // Más piezas = más columnas para aprovechar el espacio horizontal
+    int cols;
+    if (count <= 6) {
+      cols = 3; // 3 columnas para 6 o menos piezas
+    } else if (count <= 12) {
+      cols = 4; // 4 columnas para 7-12 piezas
+    } else {
+      cols = 5; // 5 columnas para más de 12 piezas
+    }
 
-    const gridWidth = cols * cellSize - spacing;
+    const spacing = 20.0; // Espaciado reducido para aprovechar más espacio
+    final cellSize = slotSize + spacing;
+
+    final gridWidth = cols * cellSize - spacing;
 
     final startX = (size.x - gridWidth) / 2;
-    final startY = size.y * 0.30;
+    final startY = size.y * 0.35; // Más abajo para dar espacio al header
 
     for (int i = 0; i < count; i++) {
       final col = i % cols;
@@ -497,37 +485,59 @@ class NebulaGame extends FlameGame {
   void _fragmentPattern() {
     final shuffled = List.generate(pieces.length, (i) => i)..shuffle();
 
-    // Diseño de baraja/abanico de cartas
-    const pieceSize = 70.0;
-    const overlapSpacing = 45.0; // Las piezas se superponen como cartas
+    // Calcular tamaño de pieza dinámicamente
+    final pieceSize = pieces.first.size.x;
 
-    // Calcular el ancho total de la baraja
-    final totalWidth = (pieces.length - 1) * overlapSpacing + pieceSize;
+    // Organización en filas - aumenta 1 pieza por fila cada nivel después del nivel 3
+    // Nivel 1-3: 6 piezas por fila
+    // Nivel 4: 7 piezas por fila
+    // Nivel 5: 8 piezas por fila, etc.
+    final maxPiecesPerRow = (6 + (levelId > 3 ? levelId - 3 : 0)).clamp(6, 10);
+    const overlapSpacing = 0.65; // Factor de superposición (65% del tamaño)
 
-    // Centrar la baraja horizontalmente
-    final startX = (size.x - totalWidth) / 2;
+    // Calcular cuántas filas necesitamos
+    final totalRows = (pieces.length / maxPiecesPerRow).ceil();
 
-    // Posición Y en la parte inferior (arriba de la barra de progreso)
-    final yPos = size.y - 180;
+    // Posición Y base fija en la parte inferior
+    const baseY = 580.0; // Posición ajustada
+    const rowSpacing = 15.0; // Espacio entre filas
 
     for (int i = 0; i < pieces.length; i++) {
       final piece = pieces[shuffled[i]];
 
+      // Determinar en qué fila está esta pieza
+      final row = i ~/ maxPiecesPerRow;
+      final posInRow = i % maxPiecesPerRow;
+      final piecesInThisRow = (i ~/ maxPiecesPerRow == totalRows - 1)
+          ? pieces.length % maxPiecesPerRow == 0
+              ? maxPiecesPerRow
+              : pieces.length % maxPiecesPerRow
+          : maxPiecesPerRow;
+
+      // Calcular el ancho total de esta fila
+      final rowWidth =
+          (piecesInThisRow - 1) * (pieceSize * overlapSpacing) + pieceSize;
+
+      // Centrar la fila horizontalmente
+      final rowStartX = (size.x - rowWidth) / 2;
+
       // Posición X con superposición
-      final xPos = startX + (i * overlapSpacing);
+      final xPos = rowStartX + (posInRow * pieceSize * overlapSpacing);
+
+      // Posición Y según la fila - INVERTIDO: las filas adicionales van ABAJO
+      final yPos = baseY + (row * (pieceSize * 0.7 + rowSpacing));
 
       // Asegurar que esté dentro de los límites
       final safeX = xPos.clamp(pieceSize / 2 + 10, size.x - pieceSize / 2 - 10);
-      final safeY =
-          yPos.clamp(pieceSize / 2 + 10, size.y - pieceSize / 2 - 120);
+      final safeY = yPos.clamp(pieceSize / 2 + 10, size.y - pieceSize / 2 - 10);
 
       piece.position = Vector2(safeX, safeY);
       piece.originalPosition = Vector2(safeX, safeY);
       piece.targetPosition = null;
       piece.isAnchored = false;
 
-      // Prioridad para que las piezas de la derecha estén encima
-      piece.priority = i;
+      // Prioridad: piezas de la derecha y filas superiores están encima
+      piece.priority = (row * maxPiecesPerRow) + posInRow;
     }
   }
 
@@ -538,10 +548,14 @@ class NebulaGame extends FlameGame {
     for (var slot in slots) {
       if (slot.isFilled) continue;
 
-      final slotCenter = slot.position + Vector2(45, 45);
+      final slotCenter =
+          slot.position + Vector2(slot.slotSize / 2, slot.slotSize / 2);
       final distance = (slotCenter - position).length;
 
-      if (distance < 120 && distance < minDistance) {
+      // Distancia de detección basada en el tamaño del slot
+      final detectionRadius = slot.slotSize * 1.3;
+
+      if (distance < detectionRadius && distance < minDistance) {
         minDistance = distance;
         nearest = slot;
       }
@@ -583,9 +597,10 @@ class NebulaGame extends FlameGame {
       slot.isFilled = true;
       slot.isCorrect = true;
 
-      // Centrar la pieza en el slot
-      final slotCenter = slot.position + Vector2(45, 45);
-      piece.position = slotCenter - Vector2(35, 35);
+      // Centrar la pieza en el slot usando tamaños dinámicos
+      final slotCenter =
+          slot.position + Vector2(slot.slotSize / 2, slot.slotSize / 2);
+      piece.position = slotCenter - Vector2(piece.size.x / 2, piece.size.y / 2);
       piece.targetPosition = null;
       piece.isAnchored = true;
       piece.originalPosition = piece.position.clone();
@@ -659,5 +674,165 @@ class NebulaGame extends FlameGame {
 
   void onLevelFail() {
     // Manejar fallo del nivel
+  }
+}
+
+// Componente helper para cajas redondeadas con degradado
+class _RoundedBoxComponent extends PositionComponent {
+  final List<Color> gradientColors;
+  final List<Color> borderColors;
+  final double radius;
+
+  _RoundedBoxComponent({
+    required Vector2 size,
+    required Vector2 position,
+    required this.gradientColors,
+    required this.borderColors,
+    required this.radius,
+    required int priority,
+  }) : super(size: size, position: position, priority: priority);
+
+  @override
+  void render(Canvas canvas) {
+    final rect = Rect.fromLTWH(0, 0, size.x, size.y);
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+
+    // Fondo con degradado
+    final bgPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: gradientColors,
+      ).createShader(rect);
+
+    canvas.drawRRect(rrect, bgPaint);
+
+    // Borde brillante
+    final borderPaint = Paint()
+      ..shader = LinearGradient(
+        colors: borderColors,
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    canvas.drawRRect(rrect, borderPaint);
+  }
+}
+
+// Componente helper para bordes redondeados
+class _RoundedBorderComponent extends PositionComponent {
+  final List<Color> colors;
+  final double strokeWidth;
+  final double radius;
+
+  _RoundedBorderComponent({
+    required Vector2 size,
+    required Vector2 position,
+    required this.colors,
+    required this.strokeWidth,
+    required this.radius,
+    required int priority,
+  }) : super(size: size, position: position, priority: priority);
+
+  @override
+  void render(Canvas canvas) {
+    final rect = Rect.fromLTWH(0, 0, size.x, size.y);
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: colors,
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    canvas.drawRRect(rrect, paint);
+  }
+}
+
+// Componente de barra de progreso de Luna con border radius
+class _LunaProgressBarComponent extends PositionComponent {
+  final double progress;
+  final int totalPoints;
+  final int targetPoints;
+  final int progressPercent;
+
+  _LunaProgressBarComponent({
+    required Vector2 size,
+    required Vector2 position,
+    required this.progress,
+    required this.totalPoints,
+    required this.targetPoints,
+    required this.progressPercent,
+    required int priority,
+  }) : super(size: size, position: position, priority: priority);
+
+  @override
+  void render(Canvas canvas) {
+    final rect = Rect.fromLTWH(0, 0, size.x, size.y);
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(18));
+
+    // Fondo oscuro de la barra
+    final bgPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [
+          Color(0xFF0D1F2D),
+          Color(0xFF152D3F),
+        ],
+      ).createShader(rect);
+
+    canvas.drawRRect(rrect, bgPaint);
+
+    // Barra de progreso interna (solo si hay progreso)
+    if (progress > 0) {
+      final progressWidth = (size.x - 8) * progress;
+      final progressRect = Rect.fromLTWH(4, 4, progressWidth, size.y - 8);
+      final progressRRect =
+          RRect.fromRectAndRadius(progressRect, const Radius.circular(14));
+
+      // Degradado de la barra de progreso
+      final progressPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFFFF6B9D),
+            Color(0xFFFF8FB3),
+            Color(0xFFFFB3C6),
+          ],
+        ).createShader(progressRect);
+
+      canvas.drawRRect(progressRRect, progressPaint);
+
+      // Brillo en la barra de progreso
+      final glowRect = Rect.fromLTWH(4, 4, progressWidth, (size.y - 8) / 2);
+      final glowRRect =
+          RRect.fromRectAndRadius(glowRect, const Radius.circular(14));
+
+      final glowPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withOpacity(0.3),
+            Colors.white.withOpacity(0.0),
+          ],
+        ).createShader(glowRect);
+
+      canvas.drawRRect(glowRRect, glowPaint);
+    }
+
+    // Borde brillante exterior
+    final borderPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [
+          Color(0xFFFF6B9D),
+          Color(0xFFFFB3C6),
+        ],
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    canvas.drawRRect(rrect, borderPaint);
   }
 }

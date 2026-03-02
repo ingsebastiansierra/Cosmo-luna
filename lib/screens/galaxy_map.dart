@@ -3,7 +3,9 @@ import 'level_screen.dart';
 import '../data/player_progress.dart';
 
 class GalaxyMap extends StatefulWidget {
-  const GalaxyMap({super.key});
+  final bool showNavBar;
+
+  const GalaxyMap({super.key, this.showNavBar = true});
 
   @override
   State<GalaxyMap> createState() => _GalaxyMapState();
@@ -12,7 +14,6 @@ class GalaxyMap extends StatefulWidget {
 class _GalaxyMapState extends State<GalaxyMap> {
   int maxUnlockedLevel = 1;
   int totalPoints = 0;
-  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -59,57 +60,113 @@ class _GalaxyMapState extends State<GalaxyMap> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFF0A1628),
-      appBar: AppBar(
-        backgroundColor: Color(0xFF0A1628),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Color(0xFF00D9FF)),
-          onPressed: () {},
-        ),
-        title: Text(
-          'NEBULA CODE',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-          ),
-        ),
-        actions: [
+      body: Column(
+        children: [
+          // Header personalizado
           Container(
-            margin: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 20,
+              right: 20,
+              bottom: 15,
+            ),
             decoration: BoxDecoration(
-              color: Color(0xFF1A2942),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Color(0xFFFFD700), width: 1),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF0D1F2D),
+                  Color(0xFF0A1628),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.star, color: Color(0xFFFFD700), size: 20),
-                SizedBox(width: 6),
-                Text(
-                  '$totalPoints pts',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                // Título con colores diferentes
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'COSMO',
+                          style: TextStyle(
+                            color: Color(0xFF00D9FF),
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '&',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'LUNA',
+                          style: TextStyle(
+                            color: Color(0xFFFF6B9D),
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                // Badge de puntos
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF1E3A52), Color(0xFF152D42)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Color(0xFFFFD700),
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star, color: Color(0xFFFFD700), size: 18),
+                      SizedBox(width: 6),
+                      Text(
+                        '$totalPoints',
+                        style: TextStyle(
+                          color: Color(0xFFFFD700),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
+          // Subtítulo
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: EdgeInsets.symmetric(vertical: 15),
             child: Text(
               'GALAXY MAP • SECTOR 01',
               style: TextStyle(
                 color: Color(0xFF00D9FF),
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 2,
               ),
@@ -160,38 +217,7 @@ class _GalaxyMapState extends State<GalaxyMap> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        backgroundColor: Color(0xFF0A1628),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Color(0xFF00D9FF),
-        unselectedItemColor: Color(0xFF4A5568),
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'MAP',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.rocket_launch),
-            label: 'SHIPS',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.science),
-            label: 'LAB',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'PROFILE',
-          ),
-        ],
-      ),
+      bottomNavigationBar: widget.showNavBar ? null : null,
     );
   }
 }

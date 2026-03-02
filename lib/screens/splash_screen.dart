@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'galaxy_map.dart';
+import 'main_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -42,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _startGame() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const GalaxyMap()),
+      MaterialPageRoute(builder: (context) => const MainNavigation()),
     );
   }
 
@@ -86,25 +86,25 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(height: isTablet ? 40 : 20),
+                          SizedBox(height: isTablet ? 40 : 10),
 
                           // Logo del cohete
                           ScaleTransition(
                             scale: _scaleAnimation,
                             child: Icon(
                               Icons.rocket_launch,
-                              size: isTablet ? 100 : 60,
+                              size: isTablet ? 100 : 50,
                               color: Color(0xFF00B4D8),
                             ),
                           ),
 
-                          SizedBox(height: isTablet ? 30 : 15),
+                          SizedBox(height: isTablet ? 30 : 10),
 
-                          // Título NEBULA CODE
+                          // Título COSMO&LUNA
                           Text(
-                            'NEBULA CODE',
+                            'COSMO&LUNA',
                             style: TextStyle(
-                              fontSize: isTablet ? 56 : 36,
+                              fontSize: isTablet ? 56 : 32,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               letterSpacing: 4,
@@ -119,10 +119,10 @@ class _SplashScreenState extends State<SplashScreen>
 
                           // Línea decorativa
                           Container(
-                            width: isTablet ? 250 : 150,
+                            width: isTablet ? 250 : 120,
                             height: 4,
                             margin: EdgeInsets.symmetric(
-                                vertical: isTablet ? 20 : 10),
+                                vertical: isTablet ? 20 : 8),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -134,12 +134,12 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
 
-                          SizedBox(height: isTablet ? 30 : 15),
+                          SizedBox(height: isTablet ? 30 : 10),
 
                           // Imagen de Cosmo & Luna
                           Container(
-                            width: isTablet ? 400 : 240,
-                            height: isTablet ? 300 : 160,
+                            width: isTablet ? 400 : 200,
+                            height: isTablet ? 300 : 140,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(
@@ -164,14 +164,14 @@ class _SplashScreenState extends State<SplashScreen>
                                     children: [
                                       Icon(
                                         Icons.favorite,
-                                        size: isTablet ? 80 : 50,
+                                        size: isTablet ? 80 : 40,
                                         color: Color(0xFFFFB3C6),
                                       ),
-                                      SizedBox(height: 10),
+                                      SizedBox(height: 8),
                                       Text(
                                         '👨‍🚀 💙 👩‍🚀',
                                         style: TextStyle(
-                                            fontSize: isTablet ? 50 : 35),
+                                            fontSize: isTablet ? 50 : 30),
                                       ),
                                     ],
                                   ),
@@ -180,37 +180,37 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
 
-                          SizedBox(height: isTablet ? 25 : 15),
+                          SizedBox(height: isTablet ? 25 : 10),
 
                           // Subtítulo
                           Text(
                             'Cosmo & Luna',
                             style: TextStyle(
-                              fontSize: isTablet ? 32 : 22,
+                              fontSize: isTablet ? 32 : 20,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF00B4D8),
                             ),
                           ),
 
-                          SizedBox(height: isTablet ? 12 : 8),
+                          SizedBox(height: isTablet ? 12 : 6),
 
                           Text(
                             'Amor a Través del Tiempo',
                             style: TextStyle(
-                              fontSize: isTablet ? 20 : 14,
+                              fontSize: isTablet ? 20 : 13,
                               fontStyle: FontStyle.italic,
                               color: Colors.white70,
                             ),
                           ),
 
-                          SizedBox(height: isTablet ? 40 : 25),
+                          SizedBox(height: isTablet ? 40 : 20),
 
                           // Botón START GAME
                           GestureDetector(
                             onTap: _startGame,
                             child: Container(
-                              width: isTablet ? 350 : 260,
-                              height: isTablet ? 70 : 55,
+                              width: isTablet ? 350 : 240,
+                              height: isTablet ? 70 : 50,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -233,24 +233,24 @@ class _SplashScreenState extends State<SplashScreen>
                                   Text(
                                     'START GAME',
                                     style: TextStyle(
-                                      fontSize: isTablet ? 24 : 18,
+                                      fontSize: isTablet ? 24 : 16,
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF0A1628),
                                       letterSpacing: 2,
                                     ),
                                   ),
-                                  SizedBox(width: 10),
+                                  SizedBox(width: 8),
                                   Icon(
                                     Icons.play_arrow,
                                     color: Color(0xFF0A1628),
-                                    size: isTablet ? 32 : 24,
+                                    size: isTablet ? 32 : 20,
                                   ),
                                 ],
                               ),
                             ),
                           ),
 
-                          SizedBox(height: isTablet ? 30 : 20),
+                          SizedBox(height: isTablet ? 30 : 15),
 
                           // Botones OPTIONS y GALLERY
                           Row(
@@ -261,7 +261,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 label: 'OPTIONS',
                                 isTablet: isTablet,
                               ),
-                              SizedBox(width: isTablet ? 40 : 25),
+                              SizedBox(width: isTablet ? 40 : 20),
                               _buildBottomButton(
                                 icon: Icons.photo_library,
                                 label: 'GALLERY',
@@ -270,7 +270,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ],
                           ),
 
-                          SizedBox(height: isTablet ? 30 : 20),
+                          SizedBox(height: isTablet ? 30 : 15),
 
                           // Footer
                           Padding(
@@ -280,16 +280,16 @@ class _SplashScreenState extends State<SplashScreen>
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'V1.0.4-ALPHA',
+                                  'V1.0.4',
                                   style: TextStyle(
-                                    fontSize: isTablet ? 14 : 10,
+                                    fontSize: isTablet ? 14 : 9,
                                     color: Colors.white30,
                                   ),
                                 ),
                                 Text(
-                                  '© 2024 NEBULA STUDIOS',
+                                  '© 2024 NEBULA',
                                   style: TextStyle(
-                                    fontSize: isTablet ? 14 : 10,
+                                    fontSize: isTablet ? 14 : 9,
                                     color: Colors.white30,
                                   ),
                                 ),
@@ -297,7 +297,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
 
-                          SizedBox(height: isTablet ? 20 : 15),
+                          SizedBox(height: isTablet ? 20 : 10),
                         ],
                       ),
                     ),
@@ -312,13 +312,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildStar(Size size) {
-    final random = DateTime.now().millisecondsSinceEpoch % 1000;
-    final left = ((random * 0.7) % size.width).clamp(0.0, size.width - 4);
-    final top = ((random * 1.3) % size.height).clamp(0.0, size.height - 4);
+    final random = (DateTime.now().millisecondsSinceEpoch % 1000).toDouble();
+    final left = ((random * 0.7) % size.width).clamp(4.0, size.width - 4);
+    final top = ((random * 1.3) % size.height).clamp(4.0, size.height - 4);
 
     return Positioned(
-      left: left.isFinite ? left : 0,
-      top: top.isFinite ? top : 0,
+      left: left,
+      top: top,
       child: Container(
         width: 2,
         height: 2,
@@ -336,17 +336,18 @@ class _SplashScreenState extends State<SplashScreen>
     required bool isTablet,
   }) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
           color: Colors.white60,
-          size: isTablet ? 24 : 18,
+          size: isTablet ? 24 : 16,
         ),
-        SizedBox(width: 8),
+        SizedBox(width: 6),
         Text(
           label,
           style: TextStyle(
-            fontSize: isTablet ? 16 : 12,
+            fontSize: isTablet ? 16 : 11,
             color: Colors.white60,
             fontWeight: FontWeight.w500,
           ),

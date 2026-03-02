@@ -8,6 +8,7 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
   final Color color;
   final int pieceId;
   final NebulaGame game;
+  final double pieceSize;
   Vector2 velocity = Vector2.zero();
   Vector2? targetPosition;
   Vector2? originalPosition;
@@ -20,7 +21,8 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
     required this.pieceId,
     required Vector2 position,
     required this.game,
-  }) : super(position: position, size: Vector2.all(70)) {
+    required this.pieceSize,
+  }) : super(position: position, size: Vector2.all(pieceSize)) {
     originalPosition = position.clone();
   }
 
