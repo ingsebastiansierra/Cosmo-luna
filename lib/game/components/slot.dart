@@ -12,9 +12,12 @@ class Slot extends PositionComponent with TapCallbacks {
   bool isFilled = false;
   bool isCorrect = false;
   bool isActive = false;
+  bool isGlowing = false; // Para animación de acierto
 
   double pulseTimer = 0.0;
   double pulseScale = 1.0;
+  double glowTimer = 0.0;
+  double glowIntensity = 0.0;
 
   Slot({
     required this.slotId,
@@ -41,6 +44,19 @@ class Slot extends PositionComponent with TapCallbacks {
       pulseTimer += dt * 2;
       pulseScale = 1.0 + (math.sin(pulseTimer) * 0.03);
     }
+
+    // Animación de brillo de acierto
+    if (isGlowing) {
+      glowTimer += dt * 4;
+      glowIntensity = (math.sin(glowTimer) * 0.5 + 0.5).clamp(0.3, 1.0);
+
+      // Detener después de 1 segundo
+      if (glowTimer > 3.14) {
+        isGlowing = false;
+        glowTimer = 0.0;
+        glowIntensity = 0.0;
+      }
+    }
   }
 
   @override
@@ -55,6 +71,23 @@ class Slot extends PositionComponent with TapCallbacks {
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(center, radius, fillPaint);
+
+      // Animación de brillo al acertar
+      if (isGlowing) {
+        // Brillo exterior grande con el color de la pieza
+        final outerGlowPaint = Paint()
+          ..color = expectedColor.withValues(alpha: 0.6 * glowIntensity)
+          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 25);
+
+        canvas.drawCircle(center, radius + 20, outerGlowPaint);
+
+        // Brillo medio
+        final midGlowPaint = Paint()
+          ..color = expectedColor.withValues(alpha: 0.8 * glowIntensity)
+          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 15);
+
+        canvas.drawCircle(center, radius + 12, midGlowPaint);
+      }
 
       // Borde blanco brillante
       final borderPaint = Paint()
@@ -78,26 +111,34 @@ class Slot extends PositionComponent with TapCallbacks {
 
       canvas.drawPath(checkPath, checkPaint);
     } else if (isActive) {
-      // Slot activo - Fondo oscuro con borde brillante
+      // Slot activo (PISTA) - Brilla con el color de la pieza esperada
       final bgPaint = Paint()
         ..color = const Color(0xFF0D2B3E).withAlpha(180)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(center, radius, bgPaint);
 
+      // Borde con el color de la pieza esperada
       final activeBorderPaint = Paint()
-        ..color = const Color(0xFF00D9FF)
+        ..color = expectedColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.5;
+        ..strokeWidth = 4.5;
 
       canvas.drawCircle(center, radius, activeBorderPaint);
 
-      // Brillo cyan suave
-      final glowPaint = Paint()
-        ..color = const Color(0xFF00D9FF).withAlpha(60)
+      // Brillo grande con el color de la pieza
+      final outerGlowPaint = Paint()
+        ..color = expectedColor.withAlpha(120)
+        ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 20);
+
+      canvas.drawCircle(center, radius + 12, outerGlowPaint);
+
+      // Brillo interno más intenso
+      final innerGlowPaint = Paint()
+        ..color = expectedColor.withAlpha(80)
         ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 12);
 
-      canvas.drawCircle(center, radius + 6, glowPaint);
+      canvas.drawCircle(center, radius + 6, innerGlowPaint);
 
       _drawNumber(canvas, center);
     } else {

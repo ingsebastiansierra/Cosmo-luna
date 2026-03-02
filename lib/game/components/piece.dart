@@ -29,7 +29,7 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
   @override
   void render(Canvas canvas) {
     // Escala si está seleccionada
-    final scale = isSelected ? 1.15 : 1.0;
+    final scale = isSelected ? 1.2 : 1.0;
     final radius = (size.x / 2) * scale;
 
     final paint = Paint()
@@ -39,7 +39,7 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
     final borderPaint = Paint()
       ..color = isSelected ? Colors.white : Colors.white.withAlpha(200)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = isSelected ? 4 : 3;
+      ..strokeWidth = isSelected ? 5 : 3;
 
     // Sombra más pronunciada si está seleccionada
     final shadowPaint = Paint()
@@ -51,6 +51,31 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
       radius,
       shadowPaint,
     );
+
+    // Brillo exterior muy visible si está seleccionada (PISTA)
+    if (isSelected) {
+      // Brillo dorado exterior grande
+      final outerGlowPaint = Paint()
+        ..color = const Color(0xFFFFD700).withAlpha(180)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 25);
+
+      canvas.drawCircle(
+        Offset(size.x / 2, size.y / 2),
+        radius + 15,
+        outerGlowPaint,
+      );
+
+      // Segundo brillo blanco más cercano
+      final innerGlowPaint = Paint()
+        ..color = Colors.white.withAlpha(150)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
+
+      canvas.drawCircle(
+        Offset(size.x / 2, size.y / 2),
+        radius + 8,
+        innerGlowPaint,
+      );
+    }
 
     // Círculo de color
     canvas.drawCircle(
@@ -65,26 +90,13 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
       radius,
       borderPaint,
     );
-
-    // Indicador de selección (brillo)
-    if (isSelected) {
-      final glowPaint = Paint()
-        ..color = Colors.white.withAlpha(100)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
-
-      canvas.drawCircle(
-        Offset(size.x / 2, size.y / 2),
-        radius + 5,
-        glowPaint,
-      );
-    }
   }
 
   @override
   void update(double dt) {
     super.update(dt);
 
-    if (isAnchored || targetPosition == null || isDragging) return;
+    if (targetPosition == null || isDragging || isAnchored) return;
 
     // Física flotante: atracción suave hacia el objetivo
     Vector2 direction = targetPosition! - position;
@@ -95,14 +107,15 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
     // Verificar si llegó al destino
     if (direction.length < GameConstants.anchorDistance) {
       position = targetPosition!;
-      isAnchored = true;
-      _onAnchor();
+      targetPosition = null; // Limpiar el objetivo
+      velocity = Vector2.zero(); // Detener movimiento
+      // NO anclar - la pieza queda libre para ser movida de nuevo
     }
   }
 
   @override
   void onTapDown(TapDownEvent event) {
-    if (isAnchored) return;
+    if (isAnchored) return; // No permitir selección si está anclada
 
     // Seleccionar esta pieza
     game.selectPiece(this);
@@ -110,20 +123,25 @@ class Piece extends PositionComponent with TapCallbacks, DragCallbacks {
 
   @override
   void onDragStart(DragStartEvent event) {
+    if (isAnchored) return; // No permitir arrastre si está anclada
+
     super.onDragStart(event);
     isDragging = true;
-    isAnchored = false;
     isSelected = false;
     priority = 100; // Prioridad alta cuando se arrastra
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
+    if (isAnchored) return; // No permitir movimiento si está anclada
+
     position += event.localDelta;
   }
 
   @override
   void onDragEnd(DragEndEvent event) {
+    if (isAnchored) return; // No procesar si está anclada
+
     super.onDragEnd(event);
     isDragging = false;
     priority = 0;

@@ -177,7 +177,7 @@ class _GalaxyMapState extends State<GalaxyMap> {
               onRefresh: _loadProgress,
               child: ListView.builder(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                itemCount: 20,
+                itemCount: 9, // Primera galaxia solo tiene 9 niveles
                 itemBuilder: (context, index) {
                   final levelNumber = index + 1;
                   final isUnlocked = levelNumber <= maxUnlockedLevel;
@@ -187,6 +187,8 @@ class _GalaxyMapState extends State<GalaxyMap> {
                     future: PlayerProgress.isLevelCompleted(1, levelNumber),
                     builder: (context, snapshot) {
                       final isCompleted = snapshot.data ?? false;
+                      final isCheckpoint =
+                          PlayerProgress.checkpoints.contains(levelNumber);
 
                       return LevelCard(
                         levelNumber: levelNumber,
@@ -194,6 +196,7 @@ class _GalaxyMapState extends State<GalaxyMap> {
                         isLocked: !isUnlocked,
                         isCompleted: isCompleted,
                         isActive: isActive,
+                        isCheckpoint: isCheckpoint,
                         onTap: isUnlocked
                             ? () async {
                                 await Navigator.push(
@@ -228,6 +231,7 @@ class LevelCard extends StatelessWidget {
   final bool isLocked;
   final bool isCompleted;
   final bool isActive;
+  final bool isCheckpoint;
   final VoidCallback? onTap;
 
   const LevelCard({
@@ -237,6 +241,7 @@ class LevelCard extends StatelessWidget {
     required this.isLocked,
     required this.isCompleted,
     required this.isActive,
+    this.isCheckpoint = false,
     this.onTap,
   });
 
@@ -248,13 +253,18 @@ class LevelCard extends StatelessWidget {
         color: Color(0xFF1A2942),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isActive ? Color(0xFF00D9FF) : Colors.transparent,
-          width: 2,
+          color: isCheckpoint
+              ? Color(0xFFFFD700) // Dorado para checkpoints
+              : isActive
+                  ? Color(0xFF00D9FF)
+                  : Colors.transparent,
+          width: isCheckpoint ? 3 : 2,
         ),
-        boxShadow: isActive
+        boxShadow: isActive || isCheckpoint
             ? [
                 BoxShadow(
-                  color: Color(0xFF00D9FF).withOpacity(0.3),
+                  color: (isCheckpoint ? Color(0xFFFFD700) : Color(0xFF00D9FF))
+                      .withOpacity(0.3),
                   blurRadius: 12,
                   spreadRadius: 0,
                 )
@@ -280,7 +290,9 @@ class LevelCard extends StatelessWidget {
                         ? Color(0xFF00FF88)
                         : isLocked
                             ? Color(0xFF2D3748)
-                            : Color(0xFF00D9FF),
+                            : isCheckpoint
+                                ? Color(0xFFFFD700)
+                                : Color(0xFF00D9FF),
                   ),
                   child: Center(
                     child: isLocked
@@ -288,17 +300,20 @@ class LevelCard extends StatelessWidget {
                         : isCompleted
                             ? Icon(Icons.check,
                                 color: Color(0xFF0A1628), size: 28)
-                            : isActive
-                                ? Icon(Icons.rocket_launch,
+                            : isCheckpoint
+                                ? Icon(Icons.bookmark,
                                     color: Color(0xFF0A1628), size: 28)
-                                : Text(
-                                    '${levelNumber.toString().padLeft(2, '0')}',
-                                    style: TextStyle(
-                                      color: Color(0xFF0A1628),
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                : isActive
+                                    ? Icon(Icons.rocket_launch,
+                                        color: Color(0xFF0A1628), size: 28)
+                                    : Text(
+                                        '${levelNumber.toString().padLeft(2, '0')}',
+                                        style: TextStyle(
+                                          color: Color(0xFF0A1628),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                   ),
                 ),
                 SizedBox(width: 16),
@@ -307,31 +322,48 @@ class LevelCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${levelNumber.toString().padLeft(2, '0')}: $levelTitle',
-                        style: TextStyle(
-                          color: isLocked ? Color(0xFF4A5568) : Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '${levelNumber.toString().padLeft(2, '0')}: $levelTitle',
+                              style: TextStyle(
+                                color:
+                                    isLocked ? Color(0xFF4A5568) : Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isCheckpoint) ...[
+                            SizedBox(width: 4),
+                            Icon(Icons.bookmark,
+                                color: Color(0xFFFFD700), size: 16),
+                          ],
+                        ],
                       ),
                       SizedBox(height: 4),
                       Text(
-                        isCompleted
-                            ? 'SCORE: 250 PTS'
-                            : isActive
-                                ? 'ACTIVE LEVEL • 500 XP'
-                                : isLocked
-                                    ? 'LOCKED'
-                                    : 'READY TO PLAY',
+                        isCheckpoint
+                            ? 'CHECKPOINT'
+                            : isCompleted
+                                ? 'SCORE: 250 PTS'
+                                : isActive
+                                    ? 'ACTIVE LEVEL'
+                                    : isLocked
+                                        ? 'LOCKED'
+                                        : 'READY TO PLAY',
                         style: TextStyle(
-                          color: isCompleted
-                              ? Color(0xFF00FF88)
-                              : isActive
-                                  ? Color(0xFF00D9FF)
-                                  : isLocked
-                                      ? Color(0xFF4A5568)
-                                      : Color(0xFF718096),
+                          color: isCheckpoint
+                              ? Color(0xFFFFD700)
+                              : isCompleted
+                                  ? Color(0xFF00FF88)
+                                  : isActive
+                                      ? Color(0xFF00D9FF)
+                                      : isLocked
+                                          ? Color(0xFF4A5568)
+                                          : Color(0xFF718096),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.5,

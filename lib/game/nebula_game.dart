@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'components/piece.dart';
 import 'components/slot.dart';
 import 'components/victory_overlay.dart';
+import 'components/hint_offer_overlay.dart';
+import 'components/hint_button.dart';
 import '../data/player_progress.dart';
 
 class NebulaGame extends FlameGame {
@@ -21,16 +23,20 @@ class NebulaGame extends FlameGame {
   bool gameReady = false;
   Piece? selectedPiece; // Pieza actualmente seleccionada
 
-  // Sistema de puntos
+  // Sistema de puntos y vidas
   int currentPoints = 450;
-  int lunaTimeRemaining = 75;
+  double currentLives = 10.0; // Vidas de Cosmo
   int totalPointsAccumulated = 0; // Puntos totales acumulados
   late TextComponent pointsText;
-  late TextComponent lunaTimeText;
+  late TextComponent livesText;
   late TextComponent totalPointsText;
   final int pointsPerCorrect = 50;
-  final int pointsLostOnError = 25;
-  final int lunaTimeLostOnError = 10;
+
+  // Sistema de pistas
+  bool showingHintButton = false;
+  bool showingHintOffer = false;
+  Piece? lastFailedPiece; // Última pieza que falló
+  HintButton? currentHintButton; // Botón flotante actual
 
   // Meta para liberar a Luna (ajusta según dificultad)
   static const int pointsToFreeLuna = 10000;
@@ -45,8 +51,9 @@ class NebulaGame extends FlameGame {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Cargar puntos totales acumulados
+    // Cargar puntos totales y vidas actuales
     totalPointsAccumulated = await PlayerProgress.getTotalPoints();
+    currentLives = await PlayerProgress.getCurrentLives();
 
     // Fondo degradado elegante
     add(RectangleComponent(
@@ -167,10 +174,30 @@ class NebulaGame extends FlameGame {
     );
     add(pointsText);
 
+    // NÚMERO DE NIVEL - CENTRADO ENTRE LOS DOS CUADROS
+    add(TextComponent(
+      text: 'Nº$levelId',
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Color(0xFF00D9FF),
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+          shadows: [
+            Shadow(color: Color(0xFF00D9FF), blurRadius: 15),
+            Shadow(color: Colors.black, blurRadius: 5),
+          ],
+        ),
+      ),
+      position: Vector2(size.x / 2, boxY + boxHeight / 2),
+      anchor: Anchor.center,
+      priority: 9,
+    ));
+
     // BARRA DE PROGRESO DE LUNA EN EL CENTRO DEL HEADER
     _buildLunaProgressBar(headerTopMargin, boxY, boxWidth);
 
-    // Contenedor de Luna con border radius
+    // Contenedor de Vidas de Cosmo con border radius
     add(_createRoundedBox(
       size: Vector2(boxWidth, boxHeight),
       position: Vector2(size.x - boxWidth - 30, boxY),
@@ -197,7 +224,7 @@ class NebulaGame extends FlameGame {
     ));
 
     add(TextComponent(
-      text: 'LUNA',
+      text: 'VIDAS',
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Color(0xFF6B8A9E),
@@ -211,8 +238,8 @@ class NebulaGame extends FlameGame {
       priority: 9,
     ));
 
-    lunaTimeText = TextComponent(
-      text: '75%',
+    livesText = TextComponent(
+      text: currentLives.toStringAsFixed(1),
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Color(0xFFFF6B9D),
@@ -227,7 +254,7 @@ class NebulaGame extends FlameGame {
       anchor: Anchor.center,
       priority: 9,
     );
-    add(lunaTimeText);
+    add(livesText);
 
     // Texto de instrucción con diseño mejorado
     const instructionY = headerTopMargin + headerHeight + 25;
@@ -458,8 +485,21 @@ class NebulaGame extends FlameGame {
       Color(0xFFFFD700), // Dorado
       Color(0xFF00FF88), // Verde
       Color(0xFFFF6B6B), // Rojo coral
+      Color(0xFFFF9500), // Naranja
+      Color(0xFF00E5FF), // Azul claro
+      Color(0xFFFF1493), // Rosa fuerte
+      Color(0xFF7FFF00), // Verde lima
+      Color(0xFFFF69B4), // Rosa claro
+      Color(0xFF00CED1), // Turquesa
     ];
-    return colors[index % colors.length];
+
+    // Si hay más piezas que colores, usar módulo
+    // Pero mezclar para evitar patrones repetitivos
+    if (index < colors.length) {
+      return colors[index];
+    } else {
+      return colors[index % colors.length];
+    }
   }
 
   @override
@@ -491,9 +531,10 @@ class NebulaGame extends FlameGame {
     // Organización en filas - aumenta 1 pieza por fila cada nivel después del nivel 3
     // Nivel 1-3: 6 piezas por fila
     // Nivel 4: 7 piezas por fila
-    // Nivel 5: 8 piezas por fila, etc.
-    final maxPiecesPerRow = (6 + (levelId > 3 ? levelId - 3 : 0)).clamp(6, 10);
-    const overlapSpacing = 0.65; // Factor de superposición (65% del tamaño)
+    // Nivel 5+: 8 piezas por fila (máximo)
+    final maxPiecesPerRow = (6 + (levelId > 3 ? levelId - 3 : 0)).clamp(6, 8);
+    const overlapSpacing =
+        0.75; // Factor de superposición aumentado (75% del tamaño para más espacio)
 
     // Calcular cuántas filas necesitamos
     final totalRows = (pieces.length / maxPiecesPerRow).ceil();
@@ -536,8 +577,9 @@ class NebulaGame extends FlameGame {
       piece.targetPosition = null;
       piece.isAnchored = false;
 
-      // Prioridad: piezas de la derecha y filas superiores están encima
-      piece.priority = (row * maxPiecesPerRow) + posInRow;
+      // Prioridad INVERTIDA: piezas de la IZQUIERDA están encima para facilitar selección
+      // Esto permite que todas las piezas sean clickeables
+      piece.priority = (row * maxPiecesPerRow) + (maxPiecesPerRow - posInRow);
     }
   }
 
@@ -597,6 +639,10 @@ class NebulaGame extends FlameGame {
       slot.isFilled = true;
       slot.isCorrect = true;
 
+      // Activar animación de brillo de acierto
+      slot.isGlowing = true;
+      slot.glowTimer = 0.0;
+
       // Centrar la pieza en el slot usando tamaños dinámicos
       final slotCenter =
           slot.position + Vector2(slot.slotSize / 2, slot.slotSize / 2);
@@ -618,30 +664,46 @@ class NebulaGame extends FlameGame {
     }
   }
 
-  void _handleIncorrectPlacement(Piece piece) {
-    // Penalización
-    if (currentPoints >= pointsLostOnError) {
-      currentPoints -= pointsLostOnError;
-      pointsText.text = '$currentPoints';
-    } else {
-      lunaTimeRemaining =
-          (lunaTimeRemaining - lunaTimeLostOnError).clamp(0, 100);
-      _updateLunaTimeDisplay();
+  void _handleIncorrectPlacement(Piece piece) async {
+    // Guardar la pieza que falló
+    lastFailedPiece = piece;
 
-      if (lunaTimeRemaining <= 0) {
-        instructionText.text = '💔 GAME OVER';
-        Future.delayed(const Duration(seconds: 3), onLevelFail);
-        return;
-      }
+    // Perder una vida
+    await PlayerProgress.loseLife();
+    currentLives = await PlayerProgress.getCurrentLives();
+    _updateLivesDisplay();
+
+    // Verificar si Cosmo murió
+    if (await PlayerProgress.isDead()) {
+      instructionText.text = '💔 COSMO HA MUERTO';
+      Future.delayed(const Duration(seconds: 2), () async {
+        await PlayerProgress.returnToCheckpoint();
+        onGameOver();
+      });
+      return;
     }
 
-    // La pieza vuelve a su posición original
+    // La pieza vuelve a su posición original con animación
     piece.targetPosition = piece.originalPosition;
     piece.isAnchored = false;
+
+    // Mostrar botón flotante de pista si tiene suficientes vidas
+    if (currentLives >= PlayerProgress.hintCost &&
+        !showingHintButton &&
+        !isPatternVisible) {
+      _showHintButton();
+    }
   }
 
-  void _updateLunaTimeDisplay() {
-    lunaTimeText.text = '$lunaTimeRemaining%';
+  void _updateLivesDisplay() {
+    livesText.text = currentLives.toStringAsFixed(1);
+  }
+
+  void onGameOver() {
+    // Regresar al mapa de galaxias
+    if (onLevelCompleted != null) {
+      onLevelCompleted!(-1, -1); // Señal especial para regresar al mapa
+    }
   }
 
   void onLevelComplete() {
@@ -674,6 +736,162 @@ class NebulaGame extends FlameGame {
 
   void onLevelFail() {
     // Manejar fallo del nivel
+  }
+
+  // Mostrar botón flotante de pista
+  void _showHintButton() {
+    showingHintButton = true;
+
+    // Posición del botón: esquina inferior derecha, arriba del menú
+    final buttonPosition = Vector2(size.x - 50, size.y - 150);
+
+    currentHintButton = HintButton(
+      position: buttonPosition,
+      onTap: () {
+        _onHintButtonTapped();
+      },
+    );
+
+    add(currentHintButton!);
+
+    // Auto-ocultar después de 5 segundos
+    Future.delayed(const Duration(seconds: 5), () {
+      _hideHintButton();
+    });
+  }
+
+  // Ocultar botón flotante
+  void _hideHintButton() {
+    if (currentHintButton != null) {
+      currentHintButton!.removeFromParent();
+      currentHintButton = null;
+      showingHintButton = false;
+    }
+  }
+
+  // Cuando se toca el botón flotante, mostrar el modal
+  void _onHintButtonTapped() {
+    _hideHintButton();
+    _showHintOffer();
+  }
+
+  // Mostrar oferta de pista (modal)
+  void _showHintOffer() {
+    showingHintOffer = true;
+
+    final hintOverlay = HintOfferOverlay(
+      game: this,
+      hintCost: PlayerProgress.hintCost.toInt(), // Mostrar como "0.5 vidas"
+      onAccept: () {
+        _acceptHint();
+      },
+      onDecline: () {
+        _declineHint();
+      },
+    );
+
+    add(hintOverlay);
+  }
+
+  // Aceptar la pista
+  void _acceptHint() async {
+    if (lastFailedPiece == null) {
+      showingHintOffer = false;
+      return;
+    }
+
+    // Usar pista (cuesta media vida)
+    final success = await PlayerProgress.useHint();
+    if (!success) {
+      showingHintOffer = false;
+      return;
+    }
+
+    // Actualizar vidas en pantalla
+    currentLives = await PlayerProgress.getCurrentLives();
+    _updateLivesDisplay();
+
+    // Encontrar el slot correcto para la pieza
+    Slot? correctSlot;
+    for (var slot in slots) {
+      if (!slot.isFilled &&
+          slot.expectedColor.toARGB32() == lastFailedPiece!.color.toARGB32()) {
+        correctSlot = slot;
+        break;
+      }
+    }
+
+    // Mostrar pista visual
+    if (correctSlot != null) {
+      _showHintAnimation(correctSlot);
+    }
+
+    showingHintOffer = false;
+
+    // Remover el overlay
+    children.whereType<HintOfferOverlay>().forEach((overlay) {
+      overlay.removeFromParent();
+    });
+  }
+
+  // Rechazar la pista
+  void _declineHint() {
+    showingHintOffer = false;
+    lastFailedPiece = null;
+
+    // Remover el overlay
+    children.whereType<HintOfferOverlay>().forEach((overlay) {
+      overlay.removeFromParent();
+    });
+  }
+
+  // Mostrar animación de pista
+  void _showHintAnimation(Slot slot) {
+    // Activar el slot temporalmente para que brille
+    slot.isActive = true;
+
+    // Usar la pieza que falló (lastFailedPiece) en lugar de buscar cualquiera
+    Piece? hintPiece = lastFailedPiece;
+
+    // Verificar que la pieza aún existe y no está anclada
+    if (hintPiece != null && !hintPiece.isAnchored) {
+      // Asegurar que la pieza esté en un estado limpio y seleccionable
+      hintPiece.targetPosition =
+          null; // Cancelar cualquier animación de retorno
+      hintPiece.velocity = Vector2.zero(); // Detener cualquier movimiento
+      hintPiece.isDragging = false; // No está siendo arrastrada
+
+      // Hacer brillar la pieza y traerla al frente
+      hintPiece.isSelected = true;
+      hintPiece.priority = 200; // Traer al frente
+    } else {
+      // Si por alguna razón no tenemos la pieza, buscar una del mismo color
+      for (var piece in pieces) {
+        if (!piece.isAnchored &&
+            piece.color.toARGB32() == slot.expectedColor.toARGB32()) {
+          hintPiece = piece;
+
+          // Asegurar que la pieza esté en un estado limpio
+          hintPiece.targetPosition = null;
+          hintPiece.velocity = Vector2.zero();
+          hintPiece.isDragging = false;
+
+          hintPiece.isSelected = true;
+          hintPiece.priority = 200;
+          break;
+        }
+      }
+    }
+
+    // Desactivar después de 2 segundos
+    Future.delayed(const Duration(seconds: 2), () {
+      slot.isActive = false;
+      if (hintPiece != null) {
+        hintPiece.isSelected = false;
+        // La pieza queda con prioridad alta y completamente funcional
+        // Sin targetPosition ni animaciones que bloqueen la interacción
+      }
+    });
   }
 }
 
